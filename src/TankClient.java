@@ -1,16 +1,64 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
+import java.util.ArrayList;
+
 public class TankClient extends Frame {
 	public static final int GAME_WIDTH = 800; 
 	public static final int GAME_HEIGHT = 600;
 
-	Tank tank = new Tank(50, 50);
-	Missile m = new Missile(50, 50, Tank.Direction.R);
+	Tank tank = new Tank(50, 50, true, this);
+	Tank enemyTank = new Tank(100, 100, false, this);
+	Wall w = new Wall(200, 400, 200, 10, this);
+	Wall w2 = new Wall(600, 200, 10, 200, this);
+	
+	List<Tank> tanks = new ArrayList<Tank>();
+	List<Missile> missiles = new ArrayList<Missile>();
+	List<Explode> explodes = new ArrayList<Explode>();
+	
 	Image offScreenImage = null;
 	
 	public void paint(Graphics g) {
+		g.drawString("missiles count: " + missiles.size(), 10, 50);
+		g.drawString("explodes count: " + explodes.size(), 10, 70);
+		g.drawString("tanks count: " + tanks.size(), 10, 90);
+		
+		w.draw(g);
+		w2.draw(g);
+		for(int i = 0; i < missiles.size(); i++) {
+			Missile m = missiles.get(i);
+			m.hitTanks(tanks);
+			m.hitWall(w);
+			m.hitWall(w2);
+			if (!m.isLive()) {
+				missiles.remove(m);
+			} else {
+				m.draw(g);
+			}
+		}
+		
+		for(int i = 0; i < explodes.size(); i++) { 
+			Explode e = explodes.get(i); 
+			e.draw(g);
+		}
+
 		tank.draw(g);
-		m.draw(g);
+		tank.collidesWithWall(w);
+		tank.collidesWithWall(w2);
+		tank.collidesWithTanks(tanks);
+		for(int i = 0;i<tanks.size();i++) {
+			Tank tk = tanks.get(i);
+			if(tanks.get(i).isLive()) {
+				tk.collidesWithWall(w);
+				tk.collidesWithWall(w2);
+				tk.collidesWithTanks(tanks);
+				tanks.get(i).draw(g);
+			} else {
+				tanks.remove(tk);
+			}
+			
+		}
+
 	}
 	
 	public void update(Graphics g) {
@@ -22,7 +70,7 @@ public class TankClient extends Frame {
 		gOffScreen.setColor(Color.GREEN); 
 		gOffScreen.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT); 
 		gOffScreen.setColor(c); 
-		print(gOffScreen); 
+		print(gOffScreen);
 		g.drawImage(offScreenImage, 0, 0, null);
 	}
 
@@ -39,6 +87,10 @@ public class TankClient extends Frame {
 		this.setBackground(Color.GREEN); 
 		this.addKeyListener(new KeyMonitor()); 
 		setVisible(true);
+		
+		for(int i = 0; i < 10; i++) {
+			tanks.add(new Tank(50 + 40 * (i + 1), 50, false, this));
+		}
 
 		new Thread(new PaintThread()).start();
 	}
@@ -63,9 +115,11 @@ public class TankClient extends Frame {
 	}
 	
 	private class KeyMonitor extends KeyAdapter {
+		public void keyReleased(KeyEvent e) {
+			tank.KeyReleased(e);
+		}
 		public void keyPressed(KeyEvent e) {
 			tank.KeyPressed(e);
-			tank.KeyReleased(e);
 		}
 	}
 
