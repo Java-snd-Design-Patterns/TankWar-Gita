@@ -33,10 +33,19 @@ public class Tank {
 	}
 
 	int step = 0;
+	int life = 100;
 	private static Random r = new Random();
 	Direction[] dirs = Direction.values();
 	int rn = r.nextInt(dirs.length);
 	
+	public int getLife() {
+		return life;
+	}
+
+	public void setLife(int life) {
+		this.life = life;
+	}
+
 	public boolean isGood() {
 		return good;
 	}
@@ -200,6 +209,9 @@ public class Tank {
 			case KeyEvent.VK_DOWN: 
 				bD = true;
 				break;
+			case KeyEvent.VK_SPACE: 
+				fire();
+				break;
 		}
 		locateDirection();
 	}
@@ -208,7 +220,7 @@ public class Tank {
 		int key = e.getKeyCode();
 		switch(key) {
 			case KeyEvent.VK_CONTROL:
-				fire();
+				superFire();
 				break;
 			case KeyEvent.VK_LEFT: 
 				bL = false;
@@ -249,11 +261,28 @@ public class Tank {
 	}
 	
 	public Missile fire() {
+		if(!live) return null;
 		int x = this.x + Tank.WIDTH / 2 - Missile.WIDTH / 2;
 		int y = this.y + Tank.HEIGHT / 2 - Missile.WIDTH / 2;
 		Missile m = new Missile(x, y, ptDir, tc, this.good); 
 		tc.missiles.add(m);
 		return m;
+	}
+	
+	public Missile fire(Direction shootDir) {
+		if(!live) return null;
+		int x = this.x + Tank.WIDTH / 2 - Missile.WIDTH / 2;
+		int y = this.y + Tank.HEIGHT / 2 - Missile.WIDTH / 2;
+		Missile m = new Missile(x, y, shootDir, tc, this.good); 
+		tc.missiles.add(m);
+		return m;
+	}
+	
+	private void superFire() {
+		Direction[] dirs = Direction.values();
+		for(int i = 0; i < 8; i++) { 
+			fire(dirs[i]);
+		}
 	}
 	
 	public Rectangle getRect() {
@@ -269,9 +298,10 @@ public class Tank {
 	}
 	
 	public boolean collidesWithTanks(java.util.List<Tank> tanks) {
-		for(int i = 0; i < tanks.size(); i++) { Tank t = tanks.get(i);
-		if(this != t) {
-			if(this.live && t.isLive() 
+		for(int i = 0; i < tanks.size(); i++) { 
+			Tank t = tanks.get(i);
+			if(this != t) {
+				if(this.live && t.isLive() 
 				&& this.getRect().intersects(t.getRect())) { 
 					t.stay();
 					this.stay(); 

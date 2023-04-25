@@ -100,8 +100,16 @@ public class Missile {
 	public boolean hitTank(Tank t) {
 		if(this.live && this.getRect().intersects(t.getRect()) && t.isLive()
 				&& this.good != t.isGood())  {
-			t.setLive(false); 
 			this.live = false; 
+			if(t.isGood()) {
+				t.setLife(t.getLife()-20);
+			} else {
+				t.setLive(false);
+			}
+			
+			if(t.getLife() <= 0) { 
+				t.setLive(false);
+			}
 			Explode e = new Explode(t.getX(), t.getY(), tc); 
 			tc.explodes.add(e);
 			return true;
