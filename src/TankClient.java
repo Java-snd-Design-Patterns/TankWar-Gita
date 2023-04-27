@@ -4,13 +4,21 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class TankClient extends Frame {
+	
+	/**
+	*	This class serves as the main window of tank games
+	*	@author I Komang Adisaputra Gita
+	*
+	*/
+
 	public static final int GAME_WIDTH = 800; 
 	public static final int GAME_HEIGHT = 600;
 
 	Tank tank = new Tank(50, 50, true, this);
 	Tank enemyTank = new Tank(100, 100, false, this);
-	Wall w = new Wall(200, 400, 200, 10, this);
-	Wall w2 = new Wall(600, 200, 10, 200, this);
+	Wall w = new Wall(200, 400, 200, 10, this), 
+			w2 = new Wall(600, 200, 10, 200, this);
+	Blood b = new Blood();
 	
 	List<Tank> tanks = new ArrayList<Tank>();
 	List<Missile> missiles = new ArrayList<Missile>();
@@ -45,10 +53,12 @@ public class TankClient extends Frame {
 		}
 
 		tank.draw(g);
+		tank.eat(b);
 		tank.collidesWithWall(w);
 		tank.collidesWithWall(w2);
 		tank.collidesWithTanks(tanks);
-		for(int i = 0;i<tanks.size();i++) {
+		b.draw(g);
+		for(int i = 0; i < tanks.size(); i++) {
 			Tank tk = tanks.get(i);
 			if(tanks.get(i).isLive()) {
 				tk.collidesWithWall(w);

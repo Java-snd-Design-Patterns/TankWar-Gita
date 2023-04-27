@@ -11,6 +11,7 @@ public class Tank {
 
 	private boolean live = true; 
 	private boolean good = true;
+	private BloodBar bb = new BloodBar();
 	
 	public boolean isLive() {
 		return live;
@@ -84,10 +85,19 @@ public class Tank {
 		Color c = g.getColor(); 
 		if(good) {
 			g.setColor(Color.RED);
+			bb.draw(g);
 		}
 		else {
 			g.setColor(Color.BLUE);
 		}
+		
+		if(!live) {
+			if(!good) { 
+				tc.tanks.remove(this);
+			}
+			return;
+		}
+
 
 		g.fillOval(x, y, WIDTH, HEIGHT); 
 		g.setColor(c);
@@ -197,6 +207,12 @@ public class Tank {
 	public void KeyPressed(KeyEvent e) {
 		int key = e.getKeyCode(); 
 		switch(key) {
+			case KeyEvent.VK_F2:
+				if(!this.live) { 
+					this.live = true; 
+					this.life = 100;
+				}
+				break;
 			case KeyEvent.VK_LEFT: 
 				bL = true;
 				break;
@@ -316,5 +332,25 @@ public class Tank {
 		x = oldX;
 		y = oldY;
 	}
-
+	
+	private class BloodBar {
+		public void draw(Graphics g) { 
+			Color c = g.getColor(); 
+			g.setColor(Color.RED);
+			g.drawRect(x, y - 10, WIDTH, 10); 
+			int w = WIDTH * life / 100; 
+			g.fillRect(x, y - 10, w, 10); 
+			g.setColor(c);
+		}
+	}
+	
+	public boolean eat(Blood b) {
+		if(this.live && b.isLive() &&
+		this.getRect().intersects(b.getRect())) { 
+			this.life = 100; 
+			b.setLive(false);
+			return true;
+		}
+		return false;
+	}
 }
